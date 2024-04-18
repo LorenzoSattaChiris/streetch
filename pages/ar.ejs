@@ -1,85 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR Car Viewer</title>
+    <meta viewport="width=device-width, initial-scale=1.0">
+    <title>WebXR AR Example</title>
     <style>
-        body {
-            margin: 0;
-        }
-
-        #ar-canvas {
-            display: block;
-            width: 100%;
-            height: 100vh;
-        }
+        body { margin: 0; }
+        canvas { display: block; width: 100%; height: 100vh; }
     </style>
 </head>
-
 <body>
     <canvas id="ar-canvas"></canvas>
     <script type="module">
-        import * as THREE from 'https://cdn.skypack.dev/three@0.132.2/build/three.module.js';
-        import { GLTFLoader } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/loaders/GLTFLoader.js';
-        import { ARButton } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/webxr/ARButton.js';
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three/build/three.module.js';
+        import { ARButton } from 'https://cdn.jsdelivr.net/npm/three/examples/jsm/webxr/ARButton.js';
+        import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three/examples/jsm/loaders/GLTFLoader.js';
 
-        let camera, scene, renderer, model;
+        let camera, scene, renderer;
 
-        async function initAR() {
+        async function init() {
             const canvas = document.querySelector('#ar-canvas');
             scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 100);
+            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
+
             renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvas });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.xr.enabled = true;
 
-            // Set up AR button and start AR session
             document.body.appendChild(ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] }));
-            renderer.xr.addEventListener('sessionstart', onLoadModel); // Load model when session starts
 
-            // Lights
-            const ambientLight = new THREE.AmbientLight(0x404040, 4);
-            scene.add(ambientLight);
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
-            directionalLight.position.set(0, 5, 5);
-            scene.add(directionalLight);
+            const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+            scene.add(light);
+
+            const loader = new GLTFLoader();
+            loader.load('model/streetch.glb', gltf => {
+                scene.add(gltf.scene);
+            });
 
             renderer.setAnimationLoop(render);
-        }
-
-        function onLoadModel() {
-            const loader = new GLTFLoader();
-            loader.load('model/streetch.glb', function (gltf) {
-                model = gltf.scene;
-                model.scale.set(2, 2, 2);
-                model.position.set(0, 0, -5);
-                scene.add(model);
-                console.log("Model loaded and added to scene.");
-            }, undefined, function (error) {
-                console.error('An error happened loading the model:', error);
-            });
         }
 
         function render() {
             renderer.render(scene, camera);
         }
 
-        if (navigator.xr) {
-            navigator.xr.isSessionSupported('immersive-ar').then((supported) => {
-                if (supported) {
-                    initAR();
-                } else {
-                    document.body.innerHTML = "<p>AR is not supported on this device.</p>";
-                }
-            }).catch((e) => {
-                document.body.innerHTML = "<p>Unable to check AR support: " + e.message + "</p>";
-            });
-        } else {
-            document.body.innerHTML = "<p>WebXR API is not available on this browser.</p>";
-        }
+        init().catch(err => console.error(err));
     </script>
 </body>
-
 </html>
