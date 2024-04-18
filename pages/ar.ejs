@@ -23,67 +23,61 @@
     <script type="module">
         import * as THREE from 'https://cdn.skypack.dev/three@0.132.2/build/three.module.js';
         import { GLTFLoader } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/loaders/GLTFLoader.js';
-        import { VRButton } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/webxr/VRButton.js';
         import { ARButton } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/webxr/ARButton.js';
 
-        // Detect if AR is supported
-        if (navigator.xr && 'supportsSession' in navigator.xr) {
-            navigator.xr.supportsSession('immersive-ar').then(() => {
-                // AR is supported
-                initAR();
-            }).catch((e) => {
+        let camera, scene, renderer, model;
 
-                // AR not supported, display a message or handle gracefully
-                document.body.innerHTML = e + "<p>AR is not supported on this device.</p>";
-            });
-        } else {
-            // WebXR API not available, display a message or handle gracefully
-            document.body.innerHTML = e + "<p>WebXR API is not available on this browser.</p>";
-        }
-
-        let camera, scene, renderer;
-
-        function initAR() {
+        async function initAR() {
             const canvas = document.querySelector('#ar-canvas');
             scene = new THREE.Scene();
-
             camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 100);
-            console.log("Camera position: ", camera.position);
-
-            const axesHelper = new THREE.AxesHelper(5);
-            scene.add(axesHelper);
-
-
             renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvas });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.xr.enabled = true;
-            document.body.appendChild(ARButton.createButton(renderer));
 
-            // Add some lighting
-            // Adding ambient light
+            // Set up AR button and start AR session
+            document.body.appendChild(ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] }));
+            renderer.xr.addEventListener('sessionstart', onLoadModel); // Load model when session starts
+
+            // Lights
             const ambientLight = new THREE.AmbientLight(0x404040, 4);
             scene.add(ambientLight);
-
-            // Adding directional light
             const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
             directionalLight.position.set(0, 5, 5);
             scene.add(directionalLight);
 
-
-            // Load a GLTF model
-            const loader = new GLTFLoader();
-            loader.load('model/streetch.glb', function (gltf) {
-                gltf.scene.scale.set(2, 2, 2); // Example scale
-                gltf.scene.position.set(0, 0, -5); // Example position
-                scene.add(gltf.scene);
-                console.log("Model added to scene at ", gltf.scene.position);
-            });
-
             renderer.setAnimationLoop(render);
         }
 
-        function render(timestamp, frame) {
+        function onLoadModel() {
+            const loader = new GLTFLoader();
+            loader.load('model/streetch.glb', function (gltf) {
+                model = gltf.scene;
+                model.scale.set(2, 2, 2);
+                model.position.set(0, 0, -5);
+                scene.add(model);
+                console.log("Model loaded and added to scene.");
+            }, undefined, function (error) {
+                console.error('An error happened loading the model:', error);
+            });
+        }
+
+        function render() {
             renderer.render(scene, camera);
+        }
+
+        if (navigator.xr) {
+            navigator.xr.isSessionSupported('immersive-ar').then((supported) => {
+                if (supported) {
+                    initAR();
+                } else {
+                    document.body.innerHTML = "<p>AR is not supported on this device.</p>";
+                }
+            }).catch((e) => {
+                document.body.innerHTML = "<p>Unable to check AR support: " + e.message + "</p>";
+            });
+        } else {
+            document.body.innerHTML = "<p>WebXR API is not available on this browser.</p>";
         }
     </script>
 </body>
