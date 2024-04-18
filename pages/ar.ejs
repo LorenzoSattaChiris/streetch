@@ -2,19 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta viewport="width=device-width, initial-scale=1.0">
-    <title>WebXR AR Example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR Car Viewer</title>
     <style>
         body { margin: 0; }
-        canvas { display: block; width: 100%; height: 100vh; }
+        #ar-canvas { display: block; width: 100%; height: 100vh; }
     </style>
 </head>
 <body>
     <canvas id="ar-canvas"></canvas>
     <script type="module">
         import * as THREE from 'https://cdn.jsdelivr.net/npm/three/build/three.module.js';
-        import { ARButton } from 'https://cdn.jsdelivr.net/npm/three/examples/jsm/webxr/ARButton.js';
         import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three/examples/jsm/loaders/GLTFLoader.js';
+        import { ARButton } from 'https://cdn.jsdelivr.net/npm/three/examples/jsm/webxr/ARButton.js';
 
         let camera, scene, renderer;
 
@@ -22,19 +22,37 @@
             const canvas = document.querySelector('#ar-canvas');
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
-
+            
             renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvas });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.xr.enabled = true;
 
-            document.body.appendChild(ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] }));
+            if (navigator.xr) {
+                navigator.xr.isSessionSupported('immersive-ar').then((supported) => {
+                    if (supported) {
+                        const arButton = ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] });
+                        document.body.appendChild(arButton);
+                    } else {
+                        document.body.innerHTML = "<p>AR is not supported on this device.</p>";
+                    }
+                }).catch(() => {
+                    document.body.innerHTML = "<p>Failed to check AR session support.</p>";
+                });
+            } else {
+                document.body.innerHTML = "<p>WebXR API is not available on this browser.</p>";
+            }
 
+            // Lighting
             const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
             scene.add(light);
 
+            // Load a GLTF model
             const loader = new GLTFLoader();
-            loader.load('model/streetch.glb', gltf => {
+            loader.load('model/streetch.glb', function (gltf) {
                 scene.add(gltf.scene);
+            }, undefined, function (error) {
+                console.error('An error happened during the loading of the model:', error);
+                document.body.appendChild(document.createTextNode('Error loading model.'));
             });
 
             renderer.setAnimationLoop(render);
@@ -44,7 +62,10 @@
             renderer.render(scene, camera);
         }
 
-        init().catch(err => console.error(err));
+        init().catch(err => {
+            console.error(err);
+            document.body.innerHTML = "<p>An error occurred: " + err.message + "</p>";
+        });
     </script>
 </body>
 </html>
