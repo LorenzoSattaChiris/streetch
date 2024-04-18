@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR Car Viewer</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="c"></canvas>
+    <script type="module">
+        import * as THREE from 'https://cdn.skypack.dev/three@0.132.2/build/three.module.js';
+        import { GLTFLoader } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/loaders/GLTFLoader.js';
+        import { VRButton } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/webxr/VRButton.js';
+
+        let container;
+        let camera, scene, renderer;
+        let controller;
+
+        init();
+        animate();
+
+        function init() {
+            container = document.createElement('div');
+            document.body.appendChild(container);
+
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
+            renderer = new THREE.WebGLRenderer({ antialias: true, canvas: document.querySelector('#c') });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.xr.enabled = true;
+            container.appendChild(renderer.domElement);
+
+            document.body.appendChild(VRButton.createButton(renderer));
+
+            const ambientLight = new THREE.AmbientLight(0x404040, 4); // Soft overall light with increased intensity
+            scene.add(ambientLight);
+
+            const lightAbove = new THREE.DirectionalLight(0xffffff, 2);
+            lightAbove.position.set(0, 5, 0); // Position the light above the model
+            scene.add(lightAbove);
+
+            const lightBelow = new THREE.DirectionalLight(0xffffff, 1);
+            lightBelow.position.set(0, -5, 0); // Position the light below the model
+            scene.add(lightBelow);
+
+            const lightFront = new THREE.DirectionalLight(0xffffff, 1);
+            lightFront.position.set(0, 0, 5);
+            scene.add(lightFront);
+
+            // Light behind the model
+            const lightBack = new THREE.DirectionalLight(0xffffff, 1);
+            lightBack.position.set(0, 0, -5);
+            scene.add(lightBack);
+
+            const lightLeft = new THREE.DirectionalLight(0xffffff, 1.5);
+            lightLeft.position.set(-5, 0, 0);
+            scene.add(lightLeft);
+
+            // Light to the right side of the model
+            const lightRight = new THREE.DirectionalLight(0xffffff, 1.5);
+            lightRight.position.set(5, 0, 0);
+            scene.add(lightRight);
+            const loader = new GLTFLoader();
+            loader.load('model/streetch.glb', function (gltf) {
+                gltf.scene.scale.set(0.5, 0.5, 0.5);
+                scene.add(gltf.scene);
+            });
+
+            controller = renderer.xr.getController(0);
+            controller.addEventListener('select', onSelect);
+            scene.add(controller);
+
+            window.addEventListener('resize', onWindowResize, false);
+        }
+
+        function onSelect() {
+            // Interaction logic
+        }
+
+        function animate() {
+            renderer.setAnimationLoop(render);
+        }
+
+        function render() {
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+    </script>
+</body>
+
+</html>

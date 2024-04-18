@@ -62,9 +62,18 @@
             lightBack.position.set(0, 0, -5);
             scene.add(lightBack);
 
+            const lightLeft = new THREE.DirectionalLight(0xffffff, 1.5);
+            lightLeft.position.set(-5, 0, 0);
+            scene.add(lightLeft);
+
+            // Light to the right side of the model
+            const lightRight = new THREE.DirectionalLight(0xffffff, 1.5);
+            lightRight.position.set(5, 0, 0);
+            scene.add(lightRight);
+
             // GLTF Loader
             const gltfLoader = new THREE.GLTFLoader();
-            gltfLoader.load('Streetch.glb', function (gltf) {
+            gltfLoader.load('model/streetch.glb', function (gltf) {
                 const model = gltf.scene;
                 scene.add(model);
             }, undefined, function (error) {
@@ -102,11 +111,41 @@
         init();
     </script>
 
+    <button id="arButton" title="View in AR">
+        <img src="ar.svg" alt="AR Icon" />
+    </button>
+
+
     <style>
         body {
             overflow: hidden;
         }
+
+        #arButton {
+            position: fixed;
+            bottom: 30px;
+            right: 35px;
+            width: 64px;
+            height: 64px;
+            border: none;
+            border-radius: 50%;
+            background: none;
+            /* Green background */
+            cursor: pointer;
+            outline: none;
+        }
+
+        #arButton img {
+            width: 40px;
+            height: 40px;
+        }
     </style>
+
+    <script>
+        document.getElementById('arButton').addEventListener('click', function () {
+            window.location.href = '/ar'; // Update with the path to your AR view page
+        });
+    </script>
 </body>
 
 </html>
