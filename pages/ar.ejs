@@ -28,6 +28,7 @@
         import * as THREE from 'https://cdn.skypack.dev/three@0.132.2/build/three.module.js';
         import { GLTFLoader } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/loaders/GLTFLoader.js';
         import { VRButton } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/webxr/VRButton.js';
+        import { ARButton } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/webxr/ARButton.js';
 
         let container;
         let camera, scene, renderer;
@@ -47,7 +48,7 @@
             renderer.xr.enabled = true;
             container.appendChild(renderer.domElement);
 
-            document.body.appendChild(VRButton.createButton(renderer));
+            document.body.appendChild(ARButton.createButton(renderer));
 
             const ambientLight = new THREE.AmbientLight(0x404040, 4); // Soft overall light with increased intensity
             scene.add(ambientLight);
