@@ -33,7 +33,7 @@
 
             // Camera
             camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(200, 250, 0); // Increase the position values to zoom out
+            camera.position.set(300, 200, 100); // Increase the position values to zoom out
 
             // Renderer
             renderer = new THREE.WebGLRenderer({ canvas: document.querySelector("#c"), antialias: true });
@@ -44,14 +44,23 @@
             // Lighting
             const ambientLight = new THREE.AmbientLight(0x404040, 4); // Soft overall light with increased intensity
             scene.add(ambientLight);
-        
+
             const lightAbove = new THREE.DirectionalLight(0xffffff, 2);
             lightAbove.position.set(0, 5, 0); // Position the light above the model
             scene.add(lightAbove);
-        
+
             const lightBelow = new THREE.DirectionalLight(0xffffff, 1);
             lightBelow.position.set(0, -5, 0); // Position the light below the model
             scene.add(lightBelow);
+
+            const lightFront = new THREE.DirectionalLight(0xffffff, 1);
+            lightFront.position.set(0, 0, 5);
+            scene.add(lightFront);
+
+            // Light behind the model
+            const lightBack = new THREE.DirectionalLight(0xffffff, 1);
+            lightBack.position.set(0, 0, -5);
+            scene.add(lightBack);
 
             // GLTF Loader
             const gltfLoader = new THREE.GLTFLoader();
@@ -92,6 +101,12 @@
 
         init();
     </script>
+
+    <style>
+        body {
+            overflow: hidden;
+        }
+    </style>
 </body>
 
 </html>
