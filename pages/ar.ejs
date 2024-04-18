@@ -1,19 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR Car Viewer</title>
+    <title>Streetch - AR Viewer</title>
     <style>
-        body { margin: 0; }
-        #ar-canvas { display: block; width: 100%; height: 100vh; }
+        body {
+            margin: 0;
+        }
+
+        #ar-canvas {
+            display: block;
+            width: 100%;
+            height: 100vh;
+        }
     </style>
 </head>
+
 <body>
     <canvas id="ar-canvas"></canvas>
     <script type="module">
         import * as THREE from 'https://cdn.skypack.dev/three@0.132.2/build/three.module.js';
-        import { GLTFLoader } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/loaders/GLTFLoader.js';
+        import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
         import { ARButton } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/webxr/ARButton.js';
 
         let camera, scene, renderer;
@@ -22,7 +31,7 @@
             const canvas = document.querySelector('#ar-canvas');
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
-            
+
             renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvas });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.xr.enabled = true;
@@ -48,7 +57,7 @@
 
             // Load a GLTF model
             const loader = new GLTFLoader();
-            loader.load('model/streetch.glb', function (gltf) {
+            loader.load('model/streetch.glb', function (gltf) { <!-- Modify the path to the GLTF model -->
                 scene.add(gltf.scene);
             }, undefined, function (error) {
                 console.error('An error happened during the loading of the model:', error);
@@ -65,7 +74,9 @@
         init().catch(err => {
             console.error(err);
             document.body.innerHTML = "<p>An error occurred: " + err.message + "</p>";
+            alert(err.message)
         });
     </script>
 </body>
+
 </html>
