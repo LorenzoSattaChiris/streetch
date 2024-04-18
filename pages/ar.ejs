@@ -1,114 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AR Car Viewer</title>
     <style>
-        body {
-            margin: 0;
-        }
-
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100vh;
-        }
-
-        body {
-            overflow: hidden;
-        }
+        body { margin: 0; }
+        #ar-canvas { display: block; width: 100%; height: 100vh; }
     </style>
 </head>
-
 <body>
-    <canvas id="c"></canvas>
+    <canvas id="ar-canvas"></canvas>
     <script type="module">
         import * as THREE from 'https://cdn.skypack.dev/three@0.132.2/build/three.module.js';
         import { GLTFLoader } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/loaders/GLTFLoader.js';
         import { VRButton } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/webxr/VRButton.js';
         import { ARButton } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/webxr/ARButton.js';
 
-        let container;
+        // Detect if AR is supported
+        if (navigator.xr && 'supportsSession' in navigator.xr) {
+            navigator.xr.supportsSession('immersive-ar').then(() => {
+                // AR is supported
+                initAR();
+            }).catch(() => {
+                // AR not supported, display a message or handle gracefully
+                document.body.innerHTML = "<p>AR is not supported on this device.</p>";
+            });
+        } else {
+            // WebXR API not available, display a message or handle gracefully
+            document.body.innerHTML = "<p>WebXR API is not available on this browser.</p>";
+        }
+
         let camera, scene, renderer;
-        let controller;
 
-        init();
-        animate();
-
-        function init() {
-            container = document.createElement('div');
-            document.body.appendChild(container);
-
+        function initAR() {
+            const canvas = document.querySelector('#ar-canvas');
             scene = new THREE.Scene();
+
             camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
-            renderer = new THREE.WebGLRenderer({ antialias: true, canvas: document.querySelector('#c') });
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvas });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.xr.enabled = true;
-            container.appendChild(renderer.domElement);
-
             document.body.appendChild(ARButton.createButton(renderer));
 
-            const ambientLight = new THREE.AmbientLight(0x404040, 4); // Soft overall light with increased intensity
+            // Add some lighting
+            const ambientLight = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
             scene.add(ambientLight);
 
-            const lightAbove = new THREE.DirectionalLight(0xffffff, 2);
-            lightAbove.position.set(0, 5, 0); // Position the light above the model
-            scene.add(lightAbove);
-
-            const lightBelow = new THREE.DirectionalLight(0xffffff, 1);
-            lightBelow.position.set(0, -5, 0); // Position the light below the model
-            scene.add(lightBelow);
-
-            const lightFront = new THREE.DirectionalLight(0xffffff, 1);
-            lightFront.position.set(0, 0, 5);
-            scene.add(lightFront);
-
-            // Light behind the model
-            const lightBack = new THREE.DirectionalLight(0xffffff, 1);
-            lightBack.position.set(0, 0, -5);
-            scene.add(lightBack);
-
-            const lightLeft = new THREE.DirectionalLight(0xffffff, 1.5);
-            lightLeft.position.set(-5, 0, 0);
-            scene.add(lightLeft);
-
-            // Light to the right side of the model
-            const lightRight = new THREE.DirectionalLight(0xffffff, 1.5);
-            lightRight.position.set(5, 0, 0);
-            scene.add(lightRight);
+            // Load a GLTF model
             const loader = new GLTFLoader();
-            loader.load('model/streetch.glb', function (gltf) {
-                gltf.scene.scale.set(0.5, 0.5, 0.5);
+            loader.load('path_to_your_model.glb', (gltf) => {
                 scene.add(gltf.scene);
             });
 
-            controller = renderer.xr.getController(0);
-            controller.addEventListener('select', onSelect);
-            scene.add(controller);
-
-            window.addEventListener('resize', onWindowResize, false);
-        }
-
-        function onSelect() {
-            // Interaction logic
-        }
-
-        function animate() {
             renderer.setAnimationLoop(render);
         }
 
-        function render() {
+        function render(timestamp, frame) {
             renderer.render(scene, camera);
-        }
-
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
         }
     </script>
 </body>
-
 </html>
