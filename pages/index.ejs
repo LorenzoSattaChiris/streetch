@@ -122,27 +122,25 @@
                 scene.add(logoMesh);
             });
 
-            textureLoader.load(
-                'target.svg', // path to file
-                function (texture) {
-                    texture.minFilter = THREE.LinearFilter; // Improve texture quality
+            textureLoader.load('target.svg', function (texture) {
+                texture.minFilter = THREE.LinearFilter; // Improve texture quality
 
-                    const aspectRatio = 1; // Replace with your image's actual aspect ratio
-                    const logoWidth = 150;
-                    const logoHeight = logoWidth / aspectRatio;
+                const aspectRatio = 1; // Replace with your image's actual aspect ratio
+                const logoWidth = 150;
+                const logoHeight = logoWidth / aspectRatio;
 
-                    const logoMaterial = new THREE.MeshBasicMaterial({
-                        map: texture,
-                        transparent: true, // Assuming the SVG has a transparent background
-                        side: THREE.DoubleSide
-                    });
+                const logoMaterial = new THREE.MeshBasicMaterial({
+                    map: texture,
+                    transparent: true, // Assuming the SVG has a transparent background
+                    side: THREE.DoubleSide
+                });
 
-                    const logoGeometry = new THREE.PlaneGeometry(logoWidth, logoHeight);
-                    const logoMesh = new THREE.Mesh(logoGeometry, logoMaterial);
-                    logoMesh.position.set(6, -20, -187); // Adjust position accordingly
-                    logoMesh.rotation.x = Math.PI / 2; // Rotate 90 degrees around the Y axis
-                    scene.add(logoMesh);
-                },
+                const logoGeometry = new THREE.PlaneGeometry(logoWidth, logoHeight);
+                const logoMesh = new THREE.Mesh(logoGeometry, logoMaterial);
+                logoMesh.position.set(6, -20, -187); // Adjust position accordingly
+                logoMesh.rotation.x = Math.PI / 2; // Rotate 90 degrees around the Y axis
+                scene.add(logoMesh);
+            },
                 undefined, // onProgress callback not supported from within three.js
                 function (err) {
                     console.error('An error happened during loading the texture.');
