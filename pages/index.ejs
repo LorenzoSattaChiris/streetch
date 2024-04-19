@@ -36,8 +36,8 @@
     <script type="module">
         import { FontLoader, TextGeometry } from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
 
-
         let scene, camera, renderer, controls;
+        let rays = [];
 
         function init() {
             // Scene
@@ -51,9 +51,7 @@
             camera.updateProjectionMatrix();
 
             // Background
-            scene.background = new THREE.Color(0x000000); // Very pale sky blue
-
-
+            scene.background = new THREE.Color(0x000000);
 
             // Renderer
             renderer = new THREE.WebGLRenderer({ canvas: document.querySelector("#c"), antialias: true });
@@ -206,7 +204,6 @@
                 return lines;
             }
 
-
             // Controls
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
@@ -218,6 +215,7 @@
 
             animate();
         }
+
 
         function animate() {
             requestAnimationFrame(animate);
@@ -234,6 +232,32 @@
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
+
+        // Global variable to store the timeout ID
+        let revertZoomChangesTimeout;
+
+        document.addEventListener('wheel', (event) => {
+            // Update the scene and steering wheel visuals immediately upon zoom
+            scene.background = new THREE.Color(0x090909);
+            steeringWheel.style.backgroundImage = "url('speed.png')";
+
+            // Clear any existing timeout to keep the visuals changed
+            clearTimeout(revertZoomChangesTimeout);
+
+            // Calculate the new rotation angle based on the zoom intensity
+            const rotationIntensity = 0.08;
+            let rotationAngle = event.deltaY * rotationIntensity * -1;
+
+            // Apply calculated rotation to the steering wheel
+            steeringWheel.style.transform = `rotate(${rotationAngle}deg)`;
+
+            // Set a new timeout to revert the visual changes after 300 milliseconds of no zooming activity
+            revertZoomChangesTimeout = setTimeout(() => {
+                scene.background = new THREE.Color(0x000000);
+                steeringWheel.style.backgroundImage = "url('wheel.png')";
+            }, 300);
+        });
+
 
         init();
     </script>
@@ -298,7 +322,78 @@
             width: 40px;
             height: 40px;
         }
+
+        canvas {
+            cursor: hidden;
+        }
     </style>
+
+    <style>
+        body,
+        html {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+            cursor: none;
+            /* Hide the default cursor */
+        }
+
+        #steeringWheel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 32px;
+            height: 32px;
+            background-image: url('wheel.png');
+            background-size: cover;
+            pointer-events: none;
+            transition: transform 0.1s linear;
+        }
+    </style>
+
+
+    <div id="steeringWheel"></div>
+
+    <script>
+        const steeringWheel = document.getElementById('steeringWheel');
+        let isMoving = false;
+        let currentRotation = 0;
+
+        // Initialize position
+        window.onload = () => {
+            steeringWheel.style.left = `${window.innerWidth / 2 - 32}px`; // Centered on X
+            steeringWheel.style.top = `${window.innerHeight - 64}px`; // Positioned lower on Y
+        };
+
+        document.addEventListener('mousemove', (event) => {
+            isMoving = true;
+            const rotationSensitivity = 0.22;
+            const deltaX = event.movementX;
+
+            // Update position to follow the cursor
+            steeringWheel.style.left = `${event.pageX - 32}px`; // Center the wheel on the cursor
+            steeringWheel.style.top = `${event.pageY - 32}px`;
+
+            // Update rotation based on movement
+            currentRotation += deltaX * rotationSensitivity;
+            steeringWheel.style.transform = `rotate(${currentRotation}deg)`;
+
+            // Reset rotation if mouse stops moving
+            clearTimeout(window.moveTimeout);
+            window.moveTimeout = setTimeout(() => {
+                currentRotation = 0;
+                steeringWheel.style.transform = 'rotate(0deg)';
+                isMoving = false;
+            }, 100);
+        });
+
+        document.addEventListener('wheel', (event) => {
+            const zoomFactor = event.deltaY * -0.01;
+            document.body.style.backgroundSize = `${100 + zoomFactor * 100}%`;
+        });
+    </script>
+
 
     <script>
         document.getElementById('BOMButton').addEventListener('click', function () {
