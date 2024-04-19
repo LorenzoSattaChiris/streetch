@@ -4,8 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GLB Model Viewer</title>
+    <title>Streetch - Homepage</title>
+    <link rel="icon" href="/Streetch-icon.svg">
+    <meta charset="UTF-8">
+    <meta name="description" content="Streetch. The first motor assisted and autonomous Stretcher.">
+
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
         }
@@ -41,7 +51,7 @@
             camera.updateProjectionMatrix();
 
             // Background
-            scene.background = new THREE.Color(0xE6F7FF); // Very pale sky blue
+            scene.background = new THREE.Color(0x000000); // Very pale sky blue
 
 
 
@@ -95,7 +105,7 @@
             textureLoader.load('Streetch.svg', function (texture) {
                 texture.minFilter = THREE.LinearFilter; // Improve texture quality
 
-                const aspectRatio = 2; // Replace with your image's actual aspect ratio
+                const aspectRatio = 1.6; // Replace with your image's actual aspect ratio
                 const logoWidth = 100;
                 const logoHeight = logoWidth / aspectRatio;
 
@@ -111,6 +121,33 @@
                 logoMesh.rotation.y = Math.PI / 2; // Rotate 90 degrees around the Y axis
                 scene.add(logoMesh);
             });
+
+            textureLoader.load(
+                'target.svg', // path to file
+                function (texture) {
+                    texture.minFilter = THREE.LinearFilter; // Improve texture quality
+
+                    const aspectRatio = 1; // Replace with your image's actual aspect ratio
+                    const logoWidth = 150;
+                    const logoHeight = logoWidth / aspectRatio;
+
+                    const logoMaterial = new THREE.MeshBasicMaterial({
+                        map: texture,
+                        transparent: true, // Assuming the SVG has a transparent background
+                        side: THREE.DoubleSide
+                    });
+
+                    const logoGeometry = new THREE.PlaneGeometry(logoWidth, logoHeight);
+                    const logoMesh = new THREE.Mesh(logoGeometry, logoMaterial);
+                    logoMesh.position.set(6, -20, -187); // Adjust position accordingly
+                    logoMesh.rotation.x = Math.PI / 2; // Rotate 90 degrees around the Y axis
+                    scene.add(logoMesh);
+                },
+                undefined, // onProgress callback not supported from within three.js
+                function (err) {
+                    console.error('An error happened during loading the texture.');
+                }
+            );
 
             const loader = new FontLoader();
             loader.load('noto-json/regular.json', function (font) {
@@ -128,11 +165,11 @@
                         curveSegments: curveSegments
                     });
 
-                    const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
-                    const mesh = new THREE.Mesh(geometry, material);
-                    mesh.position.set(0, 150 - (index * 20), 350); // Adjust position, 50 is line height
-                    mesh.rotation.y = Math.PI / 2;
-                    scene.add(mesh);
+                    const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                    const textMesh = new THREE.Mesh(geometry, material);
+                    textMesh.position.set(0, 150 - (index * 20), 350); // Adjust position, 50 is line height
+                    textMesh.rotation.y = Math.PI / 2;
+                    scene.add(textMesh);
                 });
             });
 
@@ -170,8 +207,6 @@
 
                 return lines;
             }
-
-
 
 
             // Controls
@@ -223,8 +258,8 @@
             left: 10px;
             font-style: italic;
             font-size: small;
-            color: black;
-            font-family: Arial, sans-serif;
+            color: white;
+            font-family: "noto-ttf/regular", Arial, sans-serif;
         }
     </style>
 
@@ -236,7 +271,7 @@
         #BOMButton {
             position: fixed;
             bottom: 30px;
-            right: 35px;
+            right: 85px;
             width: 64px;
             height: 64px;
             border: none;
@@ -249,7 +284,7 @@
         #VIDEOButton {
             position: fixed;
             bottom: 30px;
-            right: 90px;
+            right: 30px;
             width: 64px;
             height: 64px;
             border: none;
